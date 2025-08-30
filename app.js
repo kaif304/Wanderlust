@@ -40,7 +40,7 @@ main()
 .catch((err)=>{console.log(err);})
 
 app.listen(8080,(req,res)=>{
-    console.log('app is listening on port 8080');
+    console.log('Server --> http://localhost:8080');
 });
 
 app.get("/", (req,res)=>{

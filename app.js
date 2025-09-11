@@ -8,6 +8,10 @@ const ExpressError = require("./utils/ExpressError.js"); // error obj to throw e
 const session = require("express-session");
 const flash = require("connect-flash");
 
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models/user.js");
+
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname,"views"));
@@ -28,8 +32,9 @@ const sessionConfig = {
     }
 }
 
-const listings = require("./routes/listing.js"); // listing related routes
-const reviews = require("./routes/review.js"); // reviews related routes
+const listingRouter = require("./routes/listing.js"); // listing related routes
+const reviewRouter = require("./routes/review.js"); // reviews related routes
+const userRouter = require("./routes/user.js"); // user related routes - signup, login, logout
 
 async function main(){
     await mongoose.connect("mongodb://127.0.0.1:27017/wanderlust",);
@@ -50,24 +55,41 @@ app.get("/", (req,res)=>{
 app.use(session(sessionConfig));
 app.use(flash());
 
+// Passport Configuration
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// Flash middleware to define & pass flash messages to all templates
 app.use((req,res,next)=>{
     res.locals.success = req.flash("success");
-
-    // console.log("Response.Locals");
-    // console.log(res.locals);
-
-    // console.log("Response.Locals.Success");
-    // console.log(res.locals.success);
+    res.locals.error = req.flash("error");
 
     next();
 });
 
+// route to create a false/demo user
+app.get("/demouser", async (req,res) => {
+    let user = new User({
+        email: "student123@gmail.com",
+        username: "parulStudent"
+    });
+
+    let registeredUser = await User.register(user, "helloworld");
+    res.send(registeredUser);
+});
 
 // All requests comming to "/listings"
-app.use("/listings", listings);
+app.use("/listings", listingRouter);
 
 // All requests comming to "/listings/:id/reviews", basically for reviews
-app.use("/listings/:id/reviews", reviews);
+app.use("/listings/:id/reviews", reviewRouter);
+
+// User related routes - signup, login, logout
+app.use("/", userRouter);
 
 
 // If no route found above

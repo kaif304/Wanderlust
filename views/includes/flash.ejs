@@ -6,3 +6,12 @@
         <button type="button" class="btn-close ms-3" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <% } %>
+
+<% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show d-flex justify-content-between align-items-center" role="alert">
+        <div>
+            <%= error[0] %>
+        </div>
+        <button type="button" class="btn-close ms-3" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>

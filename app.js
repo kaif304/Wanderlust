@@ -72,15 +72,15 @@ app.use((req,res,next)=>{
 });
 
 // route to create a false/demo user
-app.get("/demouser", async (req,res) => {
-    let user = new User({
-        email: "student123@gmail.com",
-        username: "parulStudent"
-    });
+// app.get("/demouser", async (req,res) => {
+//     let user = new User({
+//         email: "student123@gmail.com",
+//         username: "parulStudent"
+//     });
 
-    let registeredUser = await User.register(user, "helloworld");
-    res.send(registeredUser);
-});
+//     let registeredUser = await User.register(user, "helloworld");
+//     res.send(registeredUser);
+// });
 
 // All requests comming to "/listings"
 app.use("/listings", listingRouter);

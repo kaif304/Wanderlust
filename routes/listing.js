@@ -32,7 +32,7 @@ router.get("/new", isLoggedIn,(req,res)=>{
 });
 
 // New Route Post
-router.post("/new", isLoggedIn,validateListing, wrapAsync(async (req,res,next)=>{
+router.post("/new", isLoggedIn, validateListing, wrapAsync(async (req,res,next)=>{
     let newListing = new Listing(req.body.listing);
     await newListing.save();
     req.flash("success","New Listing Created!");

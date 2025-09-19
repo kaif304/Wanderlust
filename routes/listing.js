@@ -2,6 +2,10 @@ const express = require("express");
 const router = express.Router();
 const listingController = require("../controllers/listing.js");
 
+const multer  = require('multer')
+const storage = multer.memoryStorage();
+const upload = multer({ storage })
+
 const wrapAsync = require("../utils/wrapAsync.js");
 const { isLoggedIn, isOwner, validateListing } = require("../middleware.js");
 
@@ -11,7 +15,9 @@ router.route("/").get(wrapAsync(listingController.index));
 router
   .route("/new")
   .get(isLoggedIn, listingController.renderNewListingForm) // New Route Get / To add a new listing route
-  .post(isLoggedIn, validateListing, wrapAsync(listingController.createNewListing)); // New Route Post
+  // .post(isLoggedIn, validateListing, wrapAsync(listingController.createNewListing)); // New Route Post
+
+  .post(upload.single("listing[image]"), listingController.createNewListing); // New Route Post
 
 router
   .route("/:id")

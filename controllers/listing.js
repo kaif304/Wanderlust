@@ -11,11 +11,6 @@ module.exports.renderNewListingForm = (req,res)=>{
 }
 
 module.exports.createNewListing = async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
-
       const upload_stream = cloudinary.uploader.upload_stream(
         { resource_type: "auto", folder: "wanderlust_DEV",},
         async (error, result) => {
@@ -37,17 +32,7 @@ module.exports.createNewListing = async (req, res) => {
       });
 
       upload_stream.end(req.file.buffer); // send buffer to Cloudinary
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: "Something went wrong" });
-    }
 };
-// req.flash("success","New Listing Created!");
-// res.redirect("/listings");
-//     let newListing = new Listing(req.body.listing);
-//     newListing.owner = req.user._id;
-//     await newListing.save();
-// }
 
 module.exports.showListingById = async (req,res)=>{
     let  {id}  = req.params;
@@ -74,17 +59,69 @@ module.exports.renderEditForm = async (req,res)=>{
         return res.redirect("/listings");
     }
 
-    res.render("listings/edit.ejs",{listing});
+    let originalUrl = listing.image.url;
+    let currentUrl = originalUrl.replace("/upload", "/upload/w_250");
+
+    res.render("listings/edit.ejs",{listing, currentUrl});
 }
 
-module.exports.editListing = async (req,res)=>{
-    let  {id}  = req.params;
+// module.exports.editListing = async (req,res)=>{
+//     let  {id}  = req.params;
 
-    await Listing.findByIdAndUpdate(id, {...req.body.listing});
+//     await Listing.findByIdAndUpdate(id, {...req.body.listing});
 
-    req.flash("success","Listing Updated Successfully!");
+//     req.flash("success","Listing Updated Successfully!");
+//     res.redirect(`/listings/${id}`);
+// }
+
+module.exports.editListing = async (req, res) => {
+  try {
+    let { id } = req.params;
+
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
+
+    if (req.file) {
+      const upload_stream = cloudinary.uploader.upload_stream(
+        { resource_type: "auto", folder: "wanderlust_DEV" },
+        async (error, result) => {
+          if (error) {
+            console.error("Error uploading new image:", error);
+            req.flash("error", "Image upload failed!");
+            return res.redirect(`/listings/${id}`);
+          }
+
+          // OPTIONAL: delete old image from Cloudinary
+          // if (listing.image && listing.image.filename) {
+          //   await cloudinary.uploader.destroy(listing.image.filename);
+          // }
+
+          listing.image = {
+            url: result.secure_url,
+            filename: result.asset_folder + "/" + result.display_name
+          };
+
+          await listing.save();
+
+          req.flash("success", "Listing Updated Successfully!");
+          res.redirect(`/listings/${id}`);
+        }
+      );
+
+      upload_stream.end(req.file.buffer);
+    } 
+    else {
+      req.flash("success", "Listing Updated Successfully!");
+      res.redirect(`/listings/${id}`);
+    }
+  } 
+  catch (err) {
+    console.error(err);
+    req.flash("error", "Something went wrong!");
     res.redirect(`/listings/${id}`);
-}
+  }
+};
+
+
 
 module.exports.destroyListing = async (req,res)=>{
     let {id} = req.params;

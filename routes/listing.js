@@ -17,12 +17,12 @@ router
   .get(isLoggedIn, listingController.renderNewListingForm) // New Route Get / To add a new listing route
   // .post(isLoggedIn, validateListing, wrapAsync(listingController.createNewListing)); // New Route Post
 
-  .post(upload.single("listing[image]"), listingController.createNewListing); // New Route Post
+  .post(isLoggedIn, upload.single("listing[image]"), validateListing, wrapAsync(listingController.createNewListing)); // New Route Post
 
 router
   .route("/:id")
   .get(wrapAsync(listingController.showListingById)) // Show listing by a specific id
-  .put(isLoggedIn, isOwner, validateListing, wrapAsync(listingController.editListing)) // Edit Route Put
+  .put(isLoggedIn, isOwner, upload.single("listing[image]"), validateListing, wrapAsync(listingController.editListing)) // Edit Route Put
   .delete(isLoggedIn, isOwner, wrapAsync(listingController.destroyListing)); // Delete Route
 
 // Edit Route / to edit opened listing

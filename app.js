@@ -52,9 +52,9 @@ app.listen(8080,(req,res)=>{
     console.log('Server --> http://localhost:8080');
 });
 
-app.get("/", (req,res)=>{
-    res.send("Hi, i am root");
-});
+// app.get("/", (req,res)=>{
+//     res.send("Hi, i am root");
+// });
 
 app.use(session(sessionConfig));
 app.use(flash());

@@ -5,6 +5,7 @@ body{
 }
 .container{
     flex: 1;
+    margin: auto !important;
 }
 /* add font here from phase 1 b styling index, font is remaining */
 

@@ -10,6 +10,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js"); // error obj to throw errors
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const flash = require("connect-flash");
 
 const passport = require("passport");
@@ -24,9 +25,23 @@ app.use(methodOverride("_method"));
 app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
+const dbUrl = process.env.CLOUD_ATLAS_DB_URL;
+
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto: {
+        secret: process.env.SECRET,
+    },
+    touchAfter: 24 * 60 * 60
+});
+store.on("error", () => {
+    console.log("SESSION STORE ERROR", e);
+});
+
 // Session configuration
 const sessionConfig = {
-    secret: "mysupersecretkey", // secret key for signing the session ID cookie
+    store,
+    secret: process.env.SECRET, // secret key for signing the session ID cookie
     resave: false,  
     saveUninitialized: true,
     cookie: {
@@ -40,8 +55,12 @@ const listingRouter = require("./routes/listing.js"); // listing related routes
 const reviewRouter = require("./routes/review.js"); // reviews related routes
 const userRouter = require("./routes/user.js"); // user related routes - signup, login, logout
 
+
+// async function main(){
+//     await mongoose.connect("mongodb://127.0.0.1:27017/wanderlust",);
+// }
 async function main(){
-    await mongoose.connect("mongodb://127.0.0.1:27017/wanderlust",);
+    await mongoose.connect(dbUrl);
 }
 main()
 .then(()=>{console.log('Connected');
@@ -55,6 +74,7 @@ app.listen(8080,(req,res)=>{
 // app.get("/", (req,res)=>{
 //     res.send("Hi, i am root");
 // });
+
 
 app.use(session(sessionConfig));
 app.use(flash());
